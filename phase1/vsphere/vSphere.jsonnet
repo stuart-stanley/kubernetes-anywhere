@@ -3,7 +3,7 @@ function(config)
   local cfg = config.phase1;
   local vms = std.makeArray(cfg.num_nodes + 1,function(node) node+1); 
   local master_dependency_list = ["vsphere_virtual_machine.kubevm%d" % vm for vm in vms];
-  local node_name_to_ip = [("${vsphere_virtual_machine.kubevm%d.network_interface.0.ipv4_address} %s"  % [vm, (if vm == 1 then std.join("", [cfg.cluster_name, "-master"]) else std.join("", [cfg.cluster_name, "-node", vm-1]) )])  for vm in vms];
+  local node_name_to_ip = [("${vsphere_virtual_machine.kubevm%d.network_interface.0.ipv4_address} %s"  % [vm, (if vm == 1 then std.join("", [cfg.cluster_name, "-master"]) else std.join("", [cfg.cluster_name, "-node", std.toString(vm-1)]) )])  for vm in vms];
   local vm_username = "root";
   local vm_password = "kubernetes";
 
@@ -96,7 +96,7 @@ function(config)
       },
       vsphere_virtual_machine: {
         ["kubevm" + vm]: {
-            name: if vm == 1 then std.join("", [cfg.cluster_name, "-master"]) else std.join("", [cfg.cluster_name, "-node", vm-1]),
+            name: if vm == 1 then std.join("", [cfg.cluster_name, "-master"]) else std.join("", [cfg.cluster_name, "-node", std.toString(vm-1)]),
             vcpu: cfg.vSphere.vcpu,
             memory: cfg.vSphere.memory,
             enable_disk_uuid: true,
@@ -155,7 +155,7 @@ function(config)
             provisioner: [{
                 "remote-exec": {
                   inline: [
-                    "hostnamectl set-hostname %s" % std.join("", [cfg.cluster_name, "-node", vm-1]),
+                    "hostnamectl set-hostname %s" % std.join("", [cfg.cluster_name, "-node", std.toString(vm-1)]),
                     "mkdir -p /etc/kubernetes/; echo '%s' > /etc/kubernetes/k8s_config.json " % std.toString((config_metadata_template {role: "node"})),
                     "echo '%s' > /etc/configure-vm.sh; bash /etc/configure-vm.sh" % "${data.template_file.configure_node.rendered}",
                     "echo '%s' >  /etc/kubernetes/vsphere.conf" % "${data.template_file.cloudprovider.rendered}",            

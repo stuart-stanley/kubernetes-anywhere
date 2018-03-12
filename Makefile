@@ -4,7 +4,7 @@ SHELL=/bin/bash
 
 .PHONY: config echo-config
 
-IMAGE_NAME?=kubernetes-anywhere
+IMAGE_NAME?=scs-kubernetes-anywhere
 IMAGE_VERSION?=v0.0.1
 
 # sorry windows and non amd64

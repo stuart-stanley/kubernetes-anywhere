@@ -11,27 +11,32 @@ EOF
 
 if [ "${role}" == "master" ]; then
     # Download & Start etcd
-    systemctl enable etcd
-    if [ $? -ne 0 ] || [ "`systemctl is-enabled etcd`" != "enabled" ] ; then
-        echo "Failed to enable etcd service"
-        exit 1
-    fi
-    systemctl start etcd
-    if [ $? -ne 0 ] || [ "`systemctl is-active etcd`" != "active" ] ; then
-        echo "Failed to start etcd service"
-        exit 1
-    fi
+#    systemctl enable etcd  -- now done in manfist/ignition
+#    if [ $? -ne 0 ] || [ "`systemctl is-enabled etcd`" != "enabled" ] ; then
+#        echo "Failed to enable etcd service"
+#        exit 1
+#    fi
+#    systemctl start etcd
+#    if [ $? -ne 0 ] || [ "`systemctl is-active etcd`" != "active" ] ; then
+#        echo "Failed to start etcd service"
+#        exit 1
+#    fi
     # Start flannel
-    systemctl enable flanneld
-    if [ $? -ne 0 ] || [ "`systemctl is-enabled flanneld`" != "enabled" ] ; then
-        echo "Failed to enable flanneld"
-        exit 1
-    fi
-    systemctl start flanneld
-    if [ $? -ne 0 ] || [ "`systemctl is-active flanneld`" != "active" ] ; then
-        echo "Failed to start flanneld"
-        exit 1
-    fi
+#    systemctl enable flanneld
+#    if [ $? -ne 0 ] || [ "`systemctl is-enabled flanneld`" != "enabled" ] ; then
+#        echo "Failed to enable flanneld"
+#        exit 1
+#    fi
+#    systemctl start flanneld
+#    if [ $? -ne 0 ] || [ "`systemctl is-active flanneld`" != "active" ] ; then
+#        echo "Failed to start flanneld"
+#        exit 1
+#    fi
+    # add way in for 443
+    iptables -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+    iptables-save > /etc/systemd/scripts/ip4save
+    ip6tables-save > /etc/systemd/scripts/ip6save
+    
     # Create certificates on master
     echo -n "${root_ca_public_pem}" | base64 -d > "/srv/kubernetes/ca.pem"
     echo -n "${apiserver_cert_pem}" | base64 -d > "/srv/kubernetes/apiserver.pem"
@@ -41,16 +46,16 @@ if [ "${role}" == "master" ]; then
     ${master_kubeconfig}
 EOF
 else
-    systemctl enable flannelc
-    if [ $? -ne 0 ] || [ "`systemctl is-enabled flannelc`" != "enabled" ] ; then
-        echo "Failed to enable flannelc"
-        exit 1
-    fi
-    systemctl start flannelc    
-    if [ $? -ne 0 ] || [ "`systemctl is-active flannelc`" != "active" ] ; then
-        echo "Failed to start flannelc"
-        exit 1
-    fi
+#    systemctl enable flannelc
+#    if [ $? -ne 0 ] || [ "`systemctl is-enabled flannelc`" != "enabled" ] ; then
+#        echo "Failed to enable flannelc"
+#        exit 1
+#    fi
+#    systemctl start flannelc    
+#    if [ $? -ne 0 ] || [ "`systemctl is-active flannelc`" != "active" ] ; then
+#        echo "Failed to start flannelc"
+#        exit 1
+#    fi
     cat << EOF > "/srv/kubernetes/kubeconfig.json"
     ${node_kubeconfig}
 EOF
